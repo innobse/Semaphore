@@ -41,7 +41,7 @@ public class Main {
 
 class Consumer {
     private final Semaphore semaphore = new Semaphore();
-    private AtomicInteger sum = new AtomicInteger(0);
+    private volatile AtomicInteger sum = new AtomicInteger(0);
 
     void message(double qube, double square, double simple){
         Main.POWER_TYPE type = ((MyThread) Thread.currentThread()).getType();
