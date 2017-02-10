@@ -1,6 +1,8 @@
 package main;
 
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static java.lang.Math.pow;
 
 public class Main {
@@ -23,10 +25,11 @@ public class Main {
 
     }
 
-    public static Consumer getConsumer(){
+    static Consumer getConsumer(){
         return consumer1;
     }
 
+    //  инициализация рандомных данных
     private static void init(){
         Random rand = new Random();
         for (int[] tmpData : data)
@@ -38,15 +41,15 @@ public class Main {
 
 class Consumer {
     private final Semaphore semaphore = new Semaphore();
-    private double sum = 0;
+    private AtomicInteger sum = new AtomicInteger(0);
 
-    public void message(double qube, double square, double simple){
+    void message(double qube, double square, double simple){
         Main.POWER_TYPE type = ((MyThread) Thread.currentThread()).getType();
         while(!semaphore.catchMonitor(type));
         System.out.println("Процесс " + type + " " + Thread.currentThread().getName() + " in");
-        sum += qube;
-        sum += square;
-        sum += simple;
+        sum.addAndGet((int) qube);
+        sum.addAndGet((int) square);
+        sum.addAndGet((int) simple);
 
         System.out.println("Sum: " + sum);
         System.out.println("Процесс " + type + " " + Thread.currentThread().getName() + " out");
@@ -54,9 +57,10 @@ class Consumer {
     }
 }
 
+//  класс-родитель для кубатора, квадратора и простатора
 abstract class MyThread extends Thread {
-    protected Main.POWER_TYPE type;
-    protected int x;
+    Main.POWER_TYPE type;
+    int x;
     protected void calc(int x){}
     Main.POWER_TYPE getType(){
         return type;
@@ -121,11 +125,11 @@ class Simple extends MyThread{
 }
 
 class Semaphore {
-    volatile boolean qube;
-    volatile boolean square;
-    volatile boolean simple;
+    private volatile boolean qube;
+    private volatile boolean square;
+    private volatile boolean simple;
 
-    public boolean catchMonitor(Main.POWER_TYPE type){
+    boolean catchMonitor(Main.POWER_TYPE type){
         switch (type){
             case QUBE: if (!qube){
                 return qube = true;
@@ -140,7 +144,7 @@ class Semaphore {
         return false;
     }
 
-    public void freeMonitor(Main.POWER_TYPE type){
+    void freeMonitor(Main.POWER_TYPE type){
         switch (type){
             case QUBE: qube = false;
                 break;
