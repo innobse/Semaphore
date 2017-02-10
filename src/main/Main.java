@@ -45,13 +45,15 @@ class Consumer {
 
     void message(double qube, double square, double simple){
         Main.POWER_TYPE type = ((MyThread) Thread.currentThread()).getType();
-        while(!semaphore.catchMonitor(type));
-        System.out.println("Процесс " + type + " " + Thread.currentThread().getName() + " in");
-        sum.addAndGet((int) qube);
-        sum.addAndGet((int) square);
-        sum.addAndGet((int) simple);
+        while(!semaphore.catchMonitor(type)) System.out.println("-> " + Thread.currentThread().getName());
+        System.out.println("Процесс " + type + " " + Thread.currentThread().getName() + " in and add " + (qube + square + simple));
+        switch (type){
+            case QUBE: sum.addAndGet((int) qube); break;
+            case SQUARE: sum.addAndGet((int) square); break;
+            case SIMPLE: sum.addAndGet((int) simple); break;
+        }
 
-        System.out.println("Sum: " + sum);
+        System.out.println("Sum: " + sum + " <- " + Thread.currentThread().getName());
         System.out.println("Процесс " + type + " " + Thread.currentThread().getName() + " out");
         semaphore.freeMonitor(type);
     }
@@ -132,13 +134,16 @@ class Semaphore {
     boolean catchMonitor(Main.POWER_TYPE type){
         switch (type){
             case QUBE: if (!qube){
-                return qube = true;
+                qube = true;
+                return true;
             } break;
             case SQUARE: if (!square){
-                return square = true;
+                square = true;
+                return true;
             } break;
             case SIMPLE: if (!simple){
-                return simple = true;
+                simple = true;
+                return true;
             } break;
         }
         return false;
