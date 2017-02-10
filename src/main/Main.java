@@ -38,21 +38,18 @@ public class Main {
 
 class Consumer {
     private final Semaphore semaphore = new Semaphore();
-    private double qube;
-    private double square;
-    private double simple;
     private double sum = 0;
 
     public void message(double qube, double square, double simple){
         Main.POWER_TYPE type = ((MyThread) Thread.currentThread()).getType();
         while(!semaphore.catchMonitor(type));
-        System.out.println("Процесс " + type + " " + Thread.currentThread().getName() + " вошел в критическую секцию");
+        System.out.println("Процесс " + type + " " + Thread.currentThread().getName() + " in");
         sum += qube;
         sum += square;
         sum += simple;
 
         System.out.println("Sum: " + sum);
-        System.out.println("Процесс " + type + " " + Thread.currentThread().getName() + " выходит из критической секции");
+        System.out.println("Процесс " + type + " " + Thread.currentThread().getName() + " out");
         semaphore.freeMonitor(type);
     }
 }
@@ -130,14 +127,17 @@ class Semaphore {
 
     public boolean catchMonitor(Main.POWER_TYPE type){
         switch (type){
-            case QUBE: if (!qube) qube = true;
-                return qube;
-            case SQUARE: if (!square) square = true;
-                return square;
-            case SIMPLE: if (!simple) simple = true;
-                return simple;
-            default: return false;
+            case QUBE: if (!qube){
+                return qube = true;
+            } break;
+            case SQUARE: if (!square){
+                return square = true;
+            } break;
+            case SIMPLE: if (!simple){
+                return simple = true;
+            } break;
         }
+        return false;
     }
 
     public void freeMonitor(Main.POWER_TYPE type){
